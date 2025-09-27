@@ -1,0 +1,196 @@
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ServiceKey {
+  id       String @id @default(cuid())
+  user     User   @relation("UserServiceKeys", fields: [userId], references: [id], onDelete: Cascade)
+  userId   String
+  service  String // e.g. "calendar", "zoom", "github", "openai"
+  keys     Json // e.g. { "apiKey": "encrypted...", "calendarId": "encrypted..." }
+  metadata Json? // optional: additional info like { "scopes": [...], "lastVerified": "..." }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Ensure one service key per user per service
+  @@unique([userId, service])
+  @@map("service_keys")
+}
+
+// ---------- Subscriptions ---------- //
+
+enum SubscriptionTier {
+  FREE
+  BASIC
+  TUTORED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+model Subscription {
+  id String @id @default(cuid())
+
+  // who
+  studentProfileId String
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+
+  // what
+  tier   SubscriptionTier
+  status SubscriptionStatus @default(PENDING)
+
+  // period
+  startDate DateTime  @default(now())
+  endDate   DateTime? // optional for FREE/PENDING; set for annual, etc.
+
+  // back relation to TutorAssignment (one-to-one from assignment's unique subscriptionId)
+  tutorAssignment TutorAssignment?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentProfileId])
+  @@index([status])
+  @@index([endDate])
+}
+
+// ---------- Tutor Assignment ---------- //
+
+enum AssignmentStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+model TutorAssignment {
+  id String @id @default(cuid())
+
+  subscriptionId String       @unique // one assignment per subscription
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  tutorProfileId String
+  tutor          TutorProfile @relation(fields: [tutorProfileId], references: [id])
+
+  studentProfileId String
+  student          StudentProfile @relation(fields: [studentProfileId], references: [id])
+
+  status     AssignmentStatus @default(ACTIVE)
+  assignedAt DateTime         @default(now())
+  endedAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tutorProfileId])
+  @@index([studentProfileId])
+}
+
+enum UserRole {
+  ADMIN
+  TUTOR
+  STUDENT
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  role UserRole @default(STUDENT)
+
+  accounts    Account[]
+  sessions    Session[]
+  serviceKeys ServiceKey[] @relation("UserServiceKeys")
+
+  // Role-specific profiles ...
+  tutorProfile   TutorProfile?
+  studentProfile StudentProfile?
+  adminProfile   AdminProfile?
+}
+
+model TutorProfile {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  bio        String?
+  hourlyRate Decimal? @db.Decimal(10, 2)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tutorAssignments TutorAssignment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StudentProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscriptions    Subscription[]
+  tutorAssignments TutorAssignment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AdminProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  permissions String[] // Admin permissions
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
