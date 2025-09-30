@@ -1,47 +1,24 @@
 // middleware.ts
 import { NextResponse } from "next/server"
-import { auth } from "@/auth" // your re-export from NextAuth config
 import type { NextRequest } from "next/server"
+import { auth } from "@/auth" // NextAuth v5 helper
 
 export default auth(async (req: NextRequest) => {
   const { nextUrl } = req
-  const pathname = nextUrl.pathname
-  const session = req.auth // session decoded by Auth.js
+  const session = req.auth
 
-  const isStudentArea = pathname.startsWith("/platform")
-  const isTutorArea   = pathname.startsWith("/tutorHub")
-
-  // If not signed in, bounce to sign-in with a callbackUrl
+  // If not signed in, redirect to login with callback
   if (!session?.user) {
-    const signInUrl = new URL("/api/auth/signin", nextUrl)
+    const signInUrl = new URL("/auth/login", nextUrl)
     signInUrl.searchParams.set("callbackUrl", nextUrl.href)
     return NextResponse.redirect(signInUrl)
   }
 
-  const role = session.user.role
-
-    // middleware.ts (excerpt)
-    if (isStudentArea && role !== "STUDENT") {
-    const errorUrl = new URL("/auth/unauthorized", nextUrl)
-    errorUrl.searchParams.set("reason", "student-access-required")
-    return NextResponse.redirect(errorUrl)
-    }
-
-    if (isTutorArea && role !== "TUTOR") {
-    const errorUrl = new URL("/auth/unauthorized", nextUrl)
-    errorUrl.searchParams.set("reason", "tutor-access-required")
-    return NextResponse.redirect(errorUrl)
-    }
-
-
-  // Everything else → allow...
+  // Signed in → allow access
   return NextResponse.next()
 })
 
-// Configure which routes middleware applies to....
+// Apply only to /crm
 export const config = {
-  matcher: [
-    "/platform/:path*",
-    "/tutorHub/:path*",
-  ],
+  matcher: ["/crm/:path*"],
 }

@@ -12,17 +12,9 @@
     "lint": "next lint",
     "pull-envs": "npx vercel env pull .env.production",
     "postinstall": "prisma generate",
-
     "db:push": "npx prisma db push",
     "db:reset": "npx prisma migrate reset",
-
-    "test": "jest",
-    "tests:dummy": "npm test dummy.test.ts",
-    
-    "scrub:students": "npx tsx src/scripts/db/student/students.scrub.ts",
-
-    "setup:promote:tutor": "npx tsx src/scripts/db/tutor/tutor.assign.ts"
-
+    "setup:promote:admin": "npx tsx src/scripts/db/admin.assign.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
@@ -42,6 +34,7 @@
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tabs": "^1.1.13",
+    "@radix-ui/react-tooltip": "^1.2.8",
     "chokidar-cli": "^3.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -56,7 +49,8 @@
     "react-responsive": "^10.0.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
-    "ws": "^8.18.3"
+    "ws": "^8.18.3",
+    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

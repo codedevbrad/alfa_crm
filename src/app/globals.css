@@ -52,50 +52,50 @@
  */
 :root {
   --radius: 0.625rem;
-  
+
   /* Light mode: White background, very dark text */
   --background: oklch(1 0 0);              /* Pure white */
   --foreground: oklch(0.145 0 0);          /* Very dark gray/black */
-  
+
   /* Light mode: Card styling - white with dark text */
   --card: oklch(1 0 0);                    /* White card background */
   --card-foreground: oklch(0.145 0 0);     /* Dark text on cards */
-  
+
   /* Light mode: Popover styling */
   --popover: oklch(1 0 0);                 /* White popover background */
   --popover-foreground: oklch(0.145 0 0);  /* Dark text in popovers */
-  
+
   /* Light mode: Primary button/accent colors */
   --primary: oklch(0.205 0 0);             /* Dark primary color */
   --primary-foreground: oklch(0.985 0 0);  /* Light text on primary */
-  
+
   /* Light mode: Secondary elements */
   --secondary: oklch(0.97 0 0);            /* Very light gray */
   --secondary-foreground: oklch(0.205 0 0); /* Dark text on secondary */
-  
+
   /* Light mode: Muted/subtle elements */
   --muted: oklch(0.97 0 0);                /* Light gray for muted areas */
   --muted-foreground: oklch(0.556 0 0);    /* Medium gray for muted text */
-  
+
   /* Light mode: Accent elements */
   --accent: oklch(0.97 0 0);               /* Light accent background */
   --accent-foreground: oklch(0.205 0 0);   /* Dark text on accents */
-  
+
   /* Light mode: Destructive/error styling */
   --destructive: oklch(0.577 0.245 27.325); /* Red for errors */
-  
+
   /* Light mode: Borders and inputs */
   --border: oklch(0.922 0 0);              /* Light gray borders */
   --input: oklch(0.922 0 0);               /* Light gray input backgrounds */
   --ring: oklch(0.708 0 0);                /* Medium gray focus rings */
-  
+
   /* Light mode: Chart colors */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  
+
   /* Light mode: Sidebar styling */
   --sidebar: oklch(0.985 0 0);             /* Very light sidebar background */
   --sidebar-foreground: oklch(0.145 0 0);  /* Dark sidebar text */
@@ -116,46 +116,46 @@
   /* Dark mode: Dark background, light text */
   --background: oklch(0.145 0 0);          /* Very dark background */
   --foreground: oklch(0.985 0 0);          /* Very light text */
-  
+
   /* Dark mode: Card styling - darker cards with light text */
   --card: oklch(0.205 0 0);                /* Dark gray card background */
   --card-foreground: oklch(0.985 0 0);     /* Light text on cards */
-  
+
   /* Dark mode: Popover styling */
   --popover: oklch(0.205 0 0);             /* Dark popover background */
   --popover-foreground: oklch(0.985 0 0);  /* Light text in popovers */
-  
+
   /* Dark mode: Primary button/accent colors */
   --primary: oklch(0.922 0 0);             /* Light primary color */
   --primary-foreground: oklch(0.205 0 0);  /* Dark text on primary */
-  
+
   /* Dark mode: Secondary elements */
   --secondary: oklch(0.269 0 0);           /* Medium dark gray */
   --secondary-foreground: oklch(0.985 0 0); /* Light text on secondary */
-  
+
   /* Dark mode: Muted/subtle elements */
   --muted: oklch(0.269 0 0);               /* Medium dark for muted areas */
   --muted-foreground: oklch(0.708 0 0);    /* Medium light for muted text */
-  
+
   /* Dark mode: Accent elements */
   --accent: oklch(0.269 0 0);              /* Medium dark accent background */
   --accent-foreground: oklch(0.985 0 0);   /* Light text on accents */
-  
+
   /* Dark mode: Destructive/error styling */
   --destructive: oklch(0.704 0.191 22.216); /* Brighter red for dark mode */
-  
+
   /* Dark mode: Borders and inputs (semi-transparent whites) */
   --border: oklch(1 0 0 / 10%);            /* 10% opacity white borders */
   --input: oklch(1 0 0 / 15%);             /* 15% opacity white input backgrounds */
   --ring: oklch(0.556 0 0);                /* Medium gray focus rings */
-  
+
   /* Dark mode: Chart colors (adjusted for dark backgrounds) */
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  
+
   /* Dark mode: Sidebar styling */
   --sidebar: oklch(0.205 0 0);             /* Dark sidebar background */
   --sidebar-foreground: oklch(0.985 0 0);  /* Light sidebar text */

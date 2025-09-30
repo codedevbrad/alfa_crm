@@ -1,6 +1,6 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
-import { UserRole } from "@/generated/prisma"
+import { UserRole } from "@prisma/client"
 
 export const dynamic = "force-dynamic"
 
@@ -10,6 +10,6 @@ export default async function RoleRedirect() {
     if (!session?.user) {
       redirect("/auth/login")
     }
-    if (session.user.role === UserRole.TUTOR) redirect("/tutorhub")
-    redirect("/platform")
+    // if (session.user.role === UserRole.ADMIN) redirect("/alfa")
+    redirect("/crm")
 }

@@ -16,21 +16,6 @@ function GoogleLogo() {
 export default function LoginProviders ( ) {
     return (
         <div className="space-y-3">
-            {/* GitHub */}
-            <form
-              action={async () => {
-                  "use server"
-                  return signIn("github", { redirectTo: "/auth/rolecheck" })
-                }}
-            >
-              <button
-                type="submit"
-                className="w-full cursor-pointer bg-gray-900 text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
-              >
-                <Github className="h-4 w-4" aria-hidden="true" />
-                <span>Continue with GitHub</span>
-              </button>
-            </form>
 
             {/* Google */}
             <form

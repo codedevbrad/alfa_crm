@@ -1,14 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// auth.ts
+// auth.ts (NextAuth v5 config)
 
-import NextAuth from "next-auth"
-import GitHub from "next-auth/providers/github"
-import Google from "next-auth/providers/google"
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import { prisma } from "@/lib/db/prisma"
-import { UserRole } from "./generated/prisma"
-import { CreateNewStudent } from "./lib/auth/roles/student.creation"
+export const runtime = "nodejs"; // <-- Important for Prisma
 
+import NextAuth, { type NextAuthConfig } from "next-auth";
+import GitHub from "next-auth/providers/github";
+import Google from "next-auth/providers/google";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import { prisma } from "@/lib/db/prisma";
+import type { UserRole } from "@prisma/client";
+
+// ---- Module augmentation ----
 declare module "next-auth" {
   interface Session {
     provider?: string;
@@ -31,6 +33,7 @@ declare module "next-auth/jwt" {
   }
 }
 
+// ---- Diagnostics (optional) ----
 console.log("🔧 Auth.ts: Initializing NextAuth configuration");
 console.log("🔧 Environment check:", {
   hasAuthSecret: !!process.env.AUTH_SECRET,
@@ -40,84 +43,74 @@ console.log("🔧 Environment check:", {
   hasGoogleSecret: !!process.env.AUTH_GOOGLE_SECRET,
 });
 
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn, signOut
-} = NextAuth({
+// ---- Config ----
+const config: NextAuthConfig = {
   secret: process.env.AUTH_SECRET,
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   pages: {
-    signIn: '/auth/login'
+    signIn: "/auth/login",
   },
   providers: [
     GitHub({
       clientId: process.env.AUTH_GITHUB_ID!,
       clientSecret: process.env.AUTH_GITHUB_SECRET!,
-      authorization: {
-        params: {
-          // GitHub doesn't support account picker, but this will re-ask consent
-          prompt: "consent",
-        },
-      },
+      authorization: { params: { prompt: "consent" } },
     }),
     Google({
       clientId: process.env.AUTH_GOOGLE_ID!,
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
       authorization: {
         params: {
-          // Always show Google account chooser
           prompt: "select_account",
           response_type: "code",
           access_type: "offline",
         },
       },
-      // scopes: ["openid", "email", "profile"], // optional (defaults are fine)
     }),
   ],
-// auth.ts
-callbacks: {
-  async jwt({ token, user, account }) {
-    // 🔁 Always resolve a user id (first login: user.id, later: token.sub)
-    const userId = user?.id ?? token.sub;
 
-    try {
-      if (userId) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: userId },
-          select: { role: true },
-        });
+  callbacks: {
+    // Keep JWT.role in sync with DB; also carry provider/accessToken
+    async jwt({ token, user, account }) {
+      const userId = user?.id ?? token.sub ?? null;
 
-        // Keep role in sync with DB; fall back to existing token role or STUDENT
-        token.role = dbUser?.role ?? (token.role as UserRole) ?? UserRole.STUDENT;
-      } else {
-        // No user yet (should be rare) – ensure a sane default
-        token.role = (token.role as UserRole) ?? UserRole.STUDENT;
+      try {
+        if (userId) {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { role: true },
+          });
+          token.role = dbUser?.role ?? (token.role as UserRole | undefined);
+        }
+      } catch (err) {
+        console.error("🎫 JWT role refresh failed:", err);
+        // keep previous token.role unchanged if DB is down
       }
-    } catch (err) {
-      console.error("🎫 JWT role refresh failed:", err);
-      // Don’t break auth if DB is down; keep previous or default
-      token.role = (token.role as UserRole) ?? UserRole.STUDENT;
-    }
 
-    // Provider metadata (first login or when account rotates)
-    if (account) {
-      token.provider = account.provider;
-      if (account.access_token) token.accessToken = account.access_token;
-    }
+      if (account) {
+        token.provider = account.provider;
+        if (account.access_token) token.accessToken = account.access_token;
+      }
 
-    return token;
+      return token;
+    },
+
+    async session({ session, token }) {
+      // Ensure session.user exists before mutation (it always should with NextAuth)
+      if (!session.user) {
+        session.user = { id: token.sub ?? "" } as any;
+      }
+
+      session.provider = token.provider as string | undefined;
+      session.accessToken = token.accessToken as string | undefined;
+      session.user.id = token.sub ?? session.user.id;
+      session.user.role = token.role as UserRole | undefined;
+
+      return session;
+    },
   },
 
-  async session({ session, token }) {
-    session.provider = token.provider as string | undefined;
-    session.accessToken = token.accessToken as string | undefined;
-    session.user.id = token.sub!;
-    session.user.role = token.role as UserRole | undefined;
-    return session;
-  },
-},
   events: {
     async signIn(message) {
       console.log("📧 Event: signIn", JSON.stringify(message, null, 2));
@@ -127,11 +120,6 @@ callbacks: {
     },
     async createUser({ user }) {
       console.log("📧 Event: createUser", user.id);
-      try {
-        await CreateNewStudent(user);
-      } catch (error) {
-        console.error("Error creating StudentProfile:", error);
-      }
     },
     async updateUser(message) {
       console.log("📧 Event: updateUser", JSON.stringify(message, null, 2));
@@ -143,7 +131,16 @@ callbacks: {
       console.log("📧 Event: session");
     },
   },
+
   debug: process.env.NODE_ENV === "development",
-});
+};
+
+// Export handlers & helpers
+export const {
+  handlers: { GET, POST },
+  auth,
+  signIn,
+  signOut,
+} = NextAuth(config);
 
 console.log("✅ Auth.ts: NextAuth configuration complete");

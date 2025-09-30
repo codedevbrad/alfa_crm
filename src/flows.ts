@@ -1,1 +1,1 @@
-export const bootcampLogoRedirect = "/platform"
+export const platformLogoRedirect = "/crm"
