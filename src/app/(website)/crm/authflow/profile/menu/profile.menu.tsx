@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuGroup
 } from "@/components/ui/dropdown-menu"
 import { signOutAction } from "./actions"
-import { User } from "@prisma/client"
+import { User, UserRole } from "@prisma/client"
 
 
 function ProfileAvatar ( { user } : { user: User } ) {
@@ -35,8 +35,16 @@ function ProfileAvatar ( { user } : { user: User } ) {
 }
 
 
+export type ProfileMenuUser = {
+  id?: string
+  name?: string | null
+  email?: string | null
+  image?: string | null
+  role?: UserRole
+} | null
 
-export default function ProfileMenu({ user }: { user: User }) {
+
+export default function ProfileMenu({ user }: { user: ProfileMenuUser }) {
   
   // Signed in → Avatar + ShadCN dropdown ...
   const initials = user.name?.split(" ").map(s => s[0]).slice(0, 2).join("").toUpperCase() || "U";

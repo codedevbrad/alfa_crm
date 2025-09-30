@@ -7,17 +7,18 @@ export default async function Profile ( ) {
   const user = session?.user ?? null
 
   return (
-    <ProfileMenu
-      user={
-        user
-          ? {
-              name: user.name ?? null,
-              email: user.email ?? null,
-              image: user.image ?? null,
-              role: user.role 
-            }
-          : null
-      }
-    />
+   <ProfileMenu
+    user={
+      user
+        ? {
+            id: user.id,
+            name: user.name ?? null,
+            email: user.email ?? null,
+            image: user.image ?? null,
+            role: user.role, // may be undefined; ok per type
+          }
+        : null
+    }
+  />
   )
 }
