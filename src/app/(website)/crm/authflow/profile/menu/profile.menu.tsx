@@ -8,10 +8,8 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, 
   DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuGroup
 } from "@/components/ui/dropdown-menu"
-import { signInWithGithub, signOutAction } from "./actions"
+import { signOutAction } from "./actions"
 import { User } from "@prisma/client"
-
-
 
 
 function ProfileAvatar ( { user } : { user: User } ) {
@@ -42,17 +40,6 @@ export default function ProfileMenu({ user }: { user: User }) {
   
   // Signed in → Avatar + ShadCN dropdown ...
   const initials = user.name?.split(" ").map(s => s[0]).slice(0, 2).join("").toUpperCase() || "U";
-
-  if (!user) {
-    return (
-      <form action={signInWithGithub}>
-        <Button type="submit" className="gap-2">
-          <Github className="h-4 w-4" />
-          Sign in with GitHub
-        </Button>
-      </form>
-    )
-  }
 
   return (
     <DropdownMenu>
