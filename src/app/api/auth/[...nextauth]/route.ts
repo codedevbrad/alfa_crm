@@ -1,2 +1,3 @@
 // app/api/auth/[...nextauth]/route.ts
-export { GET, POST } from "@/auth";
+export const runtime = "nodejs"            // Prisma needs Node
+export { GET, POST } from "@/auth"         // re-export from your auth.t
