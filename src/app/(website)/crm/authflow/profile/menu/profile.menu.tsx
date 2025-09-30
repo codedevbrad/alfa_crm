@@ -64,14 +64,14 @@ export default function ProfileMenu({ user }: { user: ProfileMenuUser }) {
         <DropdownMenuLabel>
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={user.image ?? undefined} alt={user.name ?? "User"} />
+              <AvatarImage src={user?.image ?? undefined} alt={user?.name ?? "User"} />
               <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold">{user.name ?? "User"}</p>
-              <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+              <p className="truncate text-sm font-semibold">{user?.name ?? "User"}</p>
+              <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
             </div>
           </div>
         </DropdownMenuLabel>

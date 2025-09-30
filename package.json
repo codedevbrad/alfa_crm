@@ -5,6 +5,7 @@
   "prisma": {
     "seed": "ts-node -P tsconfig.seed.json prisma/seed.ts"
   },
+  
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -14,8 +15,13 @@
     "postinstall": "prisma generate",
     "db:push": "npx prisma db push",
     "db:reset": "npx prisma migrate reset",
-    "setup:promote:admin": "npx tsx src/scripts/db/admin.assign.ts"
+    "setup:promote:admin": "npx tsx src/scripts/db/admin.assign.ts",
+
+    "typecheck": "tsc --noEmit",
+    "lint:ci": "eslint . --max-warnings=0",
+    "build:local": "NODE_ENV=production next build"
   },
+
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
     "@neondatabase/serverless": "^1.0.1",
