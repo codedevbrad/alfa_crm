@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const runtime = "nodejs" // Prisma needs Node runtime
 
 import { NextResponse } from "next/server"

@@ -1,12 +1,14 @@
 // src/app/unauthorized/page.tsx
-"use client"
-
-import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 
-export default function UnauthorizedPage() {
-  const searchParams = useSearchParams()
-  const reason = searchParams.get("reason")
+export default async function UnauthorizedPage({
+  searchParams,
+}: {
+  // Next 15: searchParams is a Promise in server components
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const sp = (await searchParams) ?? {}
+  const reason = typeof sp.reason === "string" ? sp.reason : undefined
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-6">
@@ -24,16 +26,16 @@ export default function UnauthorizedPage() {
 
         <div className="flex justify-center gap-4">
           <Link
-            href="/platform"
+            href="/crm"
             className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-500 transition"
           >
-            Go to Platform
+            Go to CRM
           </Link>
           <Link
-            href="/tutorHub"
-            className="px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-500 transition"
+            href="/"
+            className="px-4 py-2 rounded-md bg-gray-200 text-gray-900 hover:bg-gray-300 transition"
           >
-            Go to Tutor Hub
+            Home
           </Link>
         </div>
       </div>

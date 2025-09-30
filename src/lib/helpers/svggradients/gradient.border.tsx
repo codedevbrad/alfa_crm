@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import GradientBackground , { colorsTypes } from "./gradient.colors"
 
 type GradientBorderType = {
