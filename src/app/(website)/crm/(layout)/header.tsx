@@ -1,24 +1,6 @@
-import { platformLogoRedirect } from "@/flows"
 import HeaderLogo from '@/components/app/app'
 import Profile from "../authflow/profile/profile"
 
-function Link ( { link , label } : { link : string } & { label : string } ) {
-  return (
-    <a href="#" className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200 relative group">
-      { label }
-      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:w-full transition-all duration-300" />
-    </a>  
-  )
-}
-
-
-function Nav ( ) {
-  return (
-        <nav className="hidden lg:flex items-center space-x-8">
-          <Link link="/dashboard" label="Dashboard" />
-        </nav>
-  )
-}
 
 
 export default function Header() {

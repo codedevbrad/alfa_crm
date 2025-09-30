@@ -47,7 +47,7 @@ export type ProfileMenuUser = {
 export default function ProfileMenu({ user }: { user: ProfileMenuUser }) {
   
   // Signed in → Avatar + ShadCN dropdown ...
-  const initials = user.name?.split(" ").map(s => s[0]).slice(0, 2).join("").toUpperCase() || "U";
+  const initials = user?.name?.split(" ").map(s => s[0]).slice(0, 2).join("").toUpperCase() || "U";
 
   return (
     <DropdownMenu>
@@ -56,7 +56,7 @@ export default function ProfileMenu({ user }: { user: ProfileMenuUser }) {
           variant="ghost"
           className="h-11 px-2 data-[state=open]:bg-accent"
         >
-            <ProfileAvatar user={ user } />
+            {user && <ProfileAvatar user={user as User} />}
         </Button>
       </DropdownMenuTrigger>
 
