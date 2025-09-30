@@ -1,15 +1,9 @@
 // app/crm/leads/page.tsx
+export const runtime = "nodejs"
+
 import { prisma } from "@/lib/db/prisma"
 import { LeadStatus, Prisma } from "@prisma/client"
 import Link from "next/link"
-
-type PageProps = {
-  searchParams?: {
-    q?: string
-    status?: LeadStatus
-    service?: string
-  }
-}
 
 const GBP = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" })
 
@@ -21,6 +15,10 @@ const STATUS_ORDER: LeadStatus[] = [
   "COMPLETED",
   "LOST",
 ]
+
+function isLeadStatus(val: string): val is LeadStatus {
+  return (STATUS_ORDER as string[]).includes(val)
+}
 
 function StatusBadge({ status }: { status: LeadStatus }) {
   const map: Record<LeadStatus, string> = {
@@ -38,10 +36,18 @@ function StatusBadge({ status }: { status: LeadStatus }) {
   )
 }
 
-export default async function LeadsPage({ searchParams }: PageProps) {
-  const q = (searchParams?.q ?? "").trim()
-  const status = searchParams?.status
-  const service = searchParams?.service
+export default async function LeadsPage({
+  searchParams,
+}: {
+  // 👇 Next 15: searchParams is a Promise
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const sp = (await searchParams) ?? {}
+
+  const q = typeof sp.q === "string" ? sp.q.trim() : ""
+  const statusParam = typeof sp.status === "string" ? sp.status : undefined
+  const status = statusParam && isLeadStatus(statusParam) ? statusParam : undefined
+  const service = typeof sp.service === "string" ? sp.service : undefined
 
   // Build where clause
   const where: Prisma.LeadWhereInput = {
@@ -90,18 +96,13 @@ export default async function LeadsPage({ searchParams }: PageProps) {
     totalsMap.set(t.status, { count: t._count._all, sum: t._sum.amount ?? null })
   })
 
-  // Collect services for the filter dropdown (from current results)
-  const services = Array.from(
-    new Set(leads.map((l) => l.service).filter(Boolean) as string[])
-  ).sort()
+  const services = Array.from(new Set(leads.map((l) => l.service).filter(Boolean) as string[])).sort()
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">CRM &amp; Leads</h1>
-        <p className="text-sm text-muted-foreground">
-          Manage your sales pipeline and customer relationships
-        </p>
+        <p className="text-sm text-muted-foreground">Manage your sales pipeline and customer relationships</p>
       </div>
 
       {/* Search + filters + Add Lead */}
@@ -113,11 +114,7 @@ export default async function LeadsPage({ searchParams }: PageProps) {
           className="h-10 w-full md:w-80 rounded-md border px-3 text-sm"
         />
 
-        <select
-          name="status"
-          defaultValue={status ?? ""}
-          className="h-10 rounded-md border px-3 text-sm"
-        >
+        <select name="status" defaultValue={status ?? ""} className="h-10 rounded-md border px-3 text-sm">
           <option value="">All Status</option>
           {STATUS_ORDER.map((s) => (
             <option key={s} value={s}>
@@ -126,11 +123,7 @@ export default async function LeadsPage({ searchParams }: PageProps) {
           ))}
         </select>
 
-        <select
-          name="service"
-          defaultValue={service ?? ""}
-          className="h-10 rounded-md border px-3 text-sm"
-        >
+        <select name="service" defaultValue={service ?? ""} className="h-10 rounded-md border px-3 text-sm">
           <option value="">All Services</option>
           {services.map((s) => (
             <option key={s} value={s}>
@@ -139,10 +132,7 @@ export default async function LeadsPage({ searchParams }: PageProps) {
           ))}
         </select>
 
-        <button
-          type="submit"
-          className="h-10 rounded-md border px-4 text-sm hover:bg-muted"
-        >
+        <button type="submit" className="h-10 rounded-md border px-4 text-sm hover:bg-muted">
           Apply
         </button>
 
@@ -161,14 +151,9 @@ export default async function LeadsPage({ searchParams }: PageProps) {
           const count = t?.count ?? 0
           const sum = t?.sum ? GBP.format(Number(t.sum)) : GBP.format(0)
           return (
-            <div
-              key={s}
-              className="rounded-xl border bg-card p-4 text-card-foreground"
-            >
+            <div key={s} className="rounded-xl border bg-card p-4 text-card-foreground">
               <div className="text-2xl font-bold">{count}</div>
-              <div className="text-sm capitalize text-muted-foreground">
-                {s.toLowerCase().replace("_", " ")}
-              </div>
+              <div className="text-sm capitalize text-muted-foreground">{s.toLowerCase().replace("_", " ")}</div>
               <div className="mt-1 text-xs text-muted-foreground">{sum}</div>
             </div>
           )
@@ -177,9 +162,7 @@ export default async function LeadsPage({ searchParams }: PageProps) {
 
       {/* Leads list */}
       <div className="rounded-xl border bg-card">
-        <div className="p-4 border-b text-sm text-muted-foreground">
-          Leads ({leads.length})
-        </div>
+        <div className="p-4 border-b text-sm text-muted-foreground">Leads ({leads.length})</div>
 
         <div className="divide-y">
           {leads.map((l) => (
@@ -187,9 +170,7 @@ export default async function LeadsPage({ searchParams }: PageProps) {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="font-semibold">{l.name}</div>
-                  {l.company && (
-                    <div className="text-xs text-muted-foreground">{l.company}</div>
-                  )}
+                  {l.company && <div className="text-xs text-muted-foreground">{l.company}</div>}
                   <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                     {l.email && <span>📧 {l.email}</span>}
                     {l.phone && <span>📞 {l.phone}</span>}
@@ -209,17 +190,11 @@ export default async function LeadsPage({ searchParams }: PageProps) {
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                {l.service && (
-                  <span className="rounded-full bg-muted px-2 py-0.5">{l.service}</span>
-                )}
+                {l.service && <span className="rounded-full bg-muted px-2 py-0.5">{l.service}</span>}
                 {typeof l.amount === "object" || typeof l.amount === "number" ? (
-                  <span className="rounded-full bg-muted px-2 py-0.5">
-                    {GBP.format(Number(l.amount ?? 0))}
-                  </span>
+                  <span className="rounded-full bg-muted px-2 py-0.5">{GBP.format(Number(l.amount ?? 0))}</span>
                 ) : null}
-                {l.source && (
-                  <span className="rounded-full bg-muted px-2 py-0.5">Source: {l.source}</span>
-                )}
+                {l.source && <span className="rounded-full bg-muted px-2 py-0.5">Source: {l.source}</span>}
               </div>
 
               {l.notes && (
