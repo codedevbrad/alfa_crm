@@ -19,10 +19,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true, // temp: builds pass even with TS errors
   },
-  experimental: {
-    esmExternals: "loose",
-    serverComponentsExternalPackages: ["@react-pdf/renderer"],
-  },
+  
 }
 
 export default nextConfig

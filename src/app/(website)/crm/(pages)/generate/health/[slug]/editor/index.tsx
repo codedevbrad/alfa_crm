@@ -1,20 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import { Rams, initial } from "../rams";
+import { Rams } from "../rams";
 
-const RamsPdf = dynamic(() => import("../pdf/v1"), { ssr: false });
-const RamsPdfClassic = dynamic(() => import("../pdf/v2"), { ssr: false });
+import RamsPdf from "../pdf/v1";
+import RamsPdfClassic from "../pdf/v2";
 
-/* PDF Viewer (no SSR) */
-const PDFViewer = dynamic(
-  () => import("@react-pdf/renderer").then((m) => m.PDFViewer),
-  { ssr: false }
-);
+const PDFViewer = dynamic(() => import("../pdf/viewer"), { ssr: false });
 
 /* ---------- shadcn/ui ---------- */
 import {
@@ -833,20 +827,6 @@ function fileNameWithStyle(base: string, mode: PdfViewMode) {
   if (idx > -1) return `${base.slice(0, idx)}__${mode}${base.slice(idx)}`;
   return `${base}__${mode}.pdf`;
 }
-
-// async function handleDownload(rams: Rams, fileName: string, mode: PdfViewMode) {
-//   const { pdf } = await import('@react-pdf/renderer');
-//   const element = mode === 'v2' ? <RamsPdfClassic rams={rams} /> : <RamsPdf rams={rams} />;
-//   const blob = await pdf(element).toBlob();
-//   const url = URL.createObjectURL(blob);
-//   const a = document.createElement('a');
-//   a.href = url;
-//   a.download = fileName;
-//   document.body.appendChild(a);
-//   a.click();
-//   a.remove();
-//   URL.revokeObjectURL(url);
-// }
 
 
 
