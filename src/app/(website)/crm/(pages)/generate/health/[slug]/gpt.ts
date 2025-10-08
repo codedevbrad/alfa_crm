@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use server';
 
 import { OpenAI } from 'openai';
@@ -101,7 +102,7 @@ Ensure arrays are non-empty where appropriate and include at least 5 risk_assess
     const modelObj = JSON.parse(cleaned) as Partial<Rams>;
 
     // Merge onto your initial so no keys go missing
-    let json = deepMerge<Rams>(initial, modelObj);
+    const json = deepMerge<Rams>(initial, modelObj);
 
     // Fix dates
     json.project.date = asISO(json.project.date);

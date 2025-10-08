@@ -6,7 +6,7 @@ import { useState } from "react"
 import { Rams } from "./rams";
 
 export default function Page() {
-     const [rams, setRams] = useState<Rams>(null);
+     const [rams, setRams] = useState<Rams | null>(null);
     return (
       <div className="p-4">
 

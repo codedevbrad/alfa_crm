@@ -1,15 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 'use client';
 
 import { useMemo, useRef, useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import RamsPdf from '../pdf/v1';
 import { Rams } from "../rams";
 import { generateRams } from '../gpt';
-
-const PDFViewer = dynamic(
-  () => import('@react-pdf/renderer').then((m) => m.PDFViewer),
-  { ssr: false }
-);
 
 type StepKey =
   | 'title'

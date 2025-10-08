@@ -1,7 +1,7 @@
 import React from "react";
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import RiskTable from "./risks";
-import { Rams } from "../../page";
+import { Rams } from "../../rams";
 
 /* ---------- Styles (no border shorthands) ---------- */
 
