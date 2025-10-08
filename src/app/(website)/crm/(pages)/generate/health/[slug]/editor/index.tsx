@@ -7,8 +7,8 @@ import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { Rams, initial } from "../rams";
 
-import RamsPdf from "../pdf/v1";
-import RamsPdfClassic from "../pdf/v2";
+const RamsPdf = dynamic(() => import("../pdf/v1"), { ssr: false });
+const RamsPdfClassic = dynamic(() => import("../pdf/v2"), { ssr: false });
 
 /* PDF Viewer (no SSR) */
 const PDFViewer = dynamic(
