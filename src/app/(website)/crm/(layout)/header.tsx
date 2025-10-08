@@ -1,6 +1,6 @@
 import HeaderLogo from '@/components/app/app'
 import Profile from "../authflow/profile/profile"
-
+import DarkModeToggle from '@/components/custom/darkmode'
 
 
 export default function Header() {
@@ -21,6 +21,7 @@ export default function Header() {
 
           {/* Right */}
           <div className="flex items-center space-x-4">
+              <DarkModeToggle />
               <Profile />
           </div>
         </div>

@@ -4,6 +4,7 @@
 export const runtime = "nodejs"; // <-- Important for Prisma
 
 import NextAuth, { type NextAuthConfig } from "next-auth";
+import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db/prisma";
@@ -51,6 +52,11 @@ const config: NextAuthConfig = {
     signIn: "/auth/login",
   },
   providers: [
+    GitHub({
+      clientId: process.env.AUTH_GITHUB_ID!,
+      clientSecret: process.env.AUTH_GITHUB_SECRET!,
+      authorization: { params: { prompt: "consent" } },
+    }),
     Google({
       clientId: process.env.AUTH_GOOGLE_ID!,
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,

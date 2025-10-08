@@ -31,13 +31,15 @@ import { cn } from "@/lib/utils"
 
 const items = [
   { title: "Dashboard",          url: "/crm",             icon: LayoutDashboard },
-  { title: "CRM & Leads",        url: "/crm/leads",       icon: Users },
+  { title: "CRM & Leads",        url: "/crm/leads",       icon: Users },  
+  { title: "Quoting",            url: "/crm/quoting",     icon: FileText },
+  { title: "Generate" ,          url: "/crm/generate",    icon: Users },
   { title: "Projects & Jobs",    url: "/crm/projects",    icon: Briefcase },
   { title: "Timesheets",         url: "/crm/timesheets",  icon: Clock },
   { title: "Cost Estimator",     url: "/crm/estimator",   icon: Calculator },
   { title: "Products",           url: "/crm/products",    icon: Boxes },
   { title: "Finance & Payments", url: "/crm/finance",     icon: CreditCard },
-  { title: "Quoting",            url: "/crm/quoting",     icon: FileText },
+
   { title: "Scheduling",         url: "/crm/scheduling",  icon: CalendarClock },
   { title: "Analytics",          url: "/crm/analytics",   icon: BarChart3 },
   { title: "Admin",              url: "/crm/admin",       icon: Settings },

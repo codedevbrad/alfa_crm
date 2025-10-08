@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { Providers } from "../lib/auth/auth.provider"
 
 import { ThemeProvider } from "./themeProvider"
-import BootcampSettings from "./components/settings"
 import "./globals.css"
 import LoadingBar from "@/components/app/loading/loadingBar"
 
@@ -33,7 +32,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                   <div className="flex-grow flex flex-col">
                       {children}
                   </div>
-              <BootcampSettings />
            </ThemeProvider>
         </Providers>
       </body>
