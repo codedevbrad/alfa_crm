@@ -9,7 +9,7 @@ export interface Rams {
     date: string;
     review_date?: string;
     author?: string;
-    scope?: string;               // <-- NEW
+    scope?: string;
   };
   activities: string[];
   responsibilities: { role: string; description: string }[];
@@ -19,114 +19,144 @@ export interface Rams {
     tools?: string[];
     ppe?: string[];
   };
-  health_safety?: { hazards?: string[]; controls?: string[] };
-  procedure?: { preparation?: string[]; fitting?: string[]; inspection?: string[] };
-  environment?: { waste_management?: string; spill_prevention?: string; noise_control?: string };
-  emergency?: { fire?: string; accident?: string; spill?: string };
+
+  /** Simple H&S bullet points (kept) */
+  health_safety?: string[];
+
+  /** Procedure is now an ordered list of titled steps with bullets */
+  procedure?: { step: string; details: string[] }[];
+
+  /** Structured PPE (kept) */
   ppe?: { item: string; standard?: string; type?: string }[];
+
+  /** Full risk rows (kept) */
   risk_assessment?: {
     activity: string;
     hazard: string;
-
-    // pre-control
-    likelihood: number; // L
-    severity: number; // S
-    risk: number; // R = L × S (auto)
-    who: string[]; // exposed before controls
-    controls: string; // preventive & control measures
-
-    // post-control (residual)
-    residual_likelihood?: number; // L′
-    residual_severity?: number; // S′
-    residual_risk?: number; // R′ = L′ × S′ (auto)
-    residual_who?: string[]; // who after controls
-    monitoring?: string; // monitoring arrangements
+    likelihood: number;
+    severity: number;
+    risk: number;
+    who: string[];
+    controls: string;
+    residual_likelihood?: number;
+    residual_severity?: number;
+    residual_risk?: number;
+    residual_who?: string[];
+    monitoring?: string;
   }[];
+
+  /** NEW: screenshot-style “hazards table” */
+  hazard_register?: {
+    hazard: string;                 // “What are the hazards?”
+    harm: string;                   // “Who might be harmed and how?”
+    existing_controls: string;      // “What are we already doing?”
+    further_action: string;         // “What further action is necessary?”
+    action_by: string;              // “Action by whom?”
+  }[];
+
+  /** NEW: Emergency & Rescue arrangements */
+  emergency_plan?: {
+    site_contacts?: { name: string; role?: string; phone?: string }[];
+    hospital?: { name?: string; address?: string; phone?: string };
+    muster_point?: string;
+
+    /** One or more rescue scenarios (MEWP, confined space, etc.) */
+    rescue_plans?: {
+      scenario: string;             // e.g. "MEWP", "Confined Space"
+      method?: string;              // how rescue is done
+      equipment?: string;           // tripod, winch, harness, etc.
+      designated_rescuer?: string;  // team/name/role
+    }[];
+  };
 }
 
 /* ---------- Seed Data ---------- */
 
 export const initial: Rams = {
   project: {
-    title: "Beads Construction Project at Northfield and Southfield",
-    location: "P&G Thurrock Plant, Thurrock, UK",
-    client: "P&G",
-    prepared_by: "ALFA Industrial Services Ltd",
-    date: "2024-09-11",
-    review_date: "2024-10-11",
-    author: "T. Humphries",
-    scope:
-      "Installation and tie-in of process pipework, associated supports, testing and commissioning within live facility. Includes hot works, isolation/lockout coordination, and housekeeping.", // <-- NEW
+    title: "",
+    location: "",
+    client: "",
+    prepared_by: "",
+    date: "",
+    review_date: "",
+    author: "",
+    scope: "",
   },
-  activities: ["HOT WORK – TIG WELDING", "USE OF POWER TOOLS", "USE OF HAND TOOLS"],
+
+  activities: [""],
+
   responsibilities: [
-    { role: "Project Manager", description: "Oversee project and ensure safety/standards" },
-    { role: "Site Supervisor", description: "Ensure day-to-day safe operations" },
-    { role: "Pipefitters & Welders", description: "Carry out pipefitting/welding" },
-    { role: "Health & Safety Officer", description: "Maintain risk assessments and protocols" },
+    { role: "", description: "" }, 
   ],
+
   materials_equipment: {
-    pipes: ["stainless steel", "mild steel"],
-    fittings: ["flanges", "elbows", "tees", "reducers"],
-    tools: ["TIG welder", "pipe cutters", "threading machine", "clamps"],
-    ppe: ["hard hats (EN397)", "safety boots (S3)", "hi-vis (EN20471)", "FFP3", "gloves"],
+    pipes: [""],
+    fittings: [""],
+    tools: [""],
+    ppe: [""],
   },
-  health_safety: {
-    hazards: ["fire/explosion", "asphyxiation", "falls from height", "electrocution"],
-    controls: ["hot work permits", "MEWP rescue plan", "pre-use inspections", "training"],
-  },
-  procedure: {
-    preparation: ["site induction", "review drawings", "material storage"],
-    fitting: ["cut & bevel", "align with clamps", "weld"],
-    inspection: ["third-party testing", "sign-off"],
-  },
-  environment: {
-    waste_management: "Dispose per site policy",
-    spill_prevention: "Spill trays for oil/fuel",
-    noise_control: "Hearing protection >85dB",
-  },
-  emergency: {
-    fire: "Evacuate to muster point",
-    accident: "Report to supervisor",
-    spill: "Use on-site spill kits",
-  },
-  ppe: [
-    { item: "Respirator", standard: "FFP3" },
-    { item: "Safety Harness", standard: "Fall Restraint" },
-    { item: "Welding Helmet", standard: "Shade 9-13" },
-    { item: "Gloves", type: "Nitrile" },
-    { item: "Boots", standard: "S3" },
-    { item: "Hard Hat", standard: "EN397" },
-    { item: "Hi-Vis Vest", standard: "EN20471" },
+
+  health_safety: [
+    "",
   ],
+
+  procedure: [
+    {
+      step: "",
+      details: [
+        "",
+        "",
+      ],
+    },
+    {
+      step: "",
+      details: ["", "", ""],
+    },
+  ],
+
+  ppe: [
+    { item: "", standard: "" },
+  ],
+
   risk_assessment: [
     {
-      activity: "Draining water from dye line",
-      hazard: "Water contact with machinery",
-      likelihood: 5,
-      severity: 3,
-      risk: 15,
-      who: ["A", "B", "C"],
-      controls: "Drain to pre-agreed location; use hose",
+      activity: "",
+      hazard: "",
+      likelihood: 0,
+      severity: 0,
+      risk: 0,
+      who: [],
+      controls: "",
       residual_likelihood: 1,
       residual_severity: 3,
       residual_risk: 3,
-      residual_who: ["A", "B", "C"],
-      monitoring: "Client to monitor during drain down",
-    },
-    {
-      activity: "Slips, trips, falls",
-      hazard: "Trailing cables / poorly stored materials",
-      likelihood: 3,
-      severity: 3,
-      risk: 9,
-      who: ["A", "B", "C"],
-      controls: "Tidy cables; store spools safely",
-      residual_likelihood: 1,
-      residual_severity: 3,
-      residual_risk: 3,
-      residual_who: ["A", "B", "C"],
-      monitoring: "Monitor housekeeping during site safety inspections",
+      residual_who: [""],
+      monitoring: "",
     },
   ],
+
+  /* NEW: hazards table, like your screenshot */
+  hazard_register: [],
+
+  /* NEW: Emergency & Rescue plan */
+  emergency_plan: {
+    site_contacts: [
+      { name: "", role: "", phone: "" },
+    ],
+    hospital: {
+      name: "",
+      address: "",
+      phone: "",
+    },
+    muster_point: "",
+    rescue_plans: [
+      {
+        scenario: "",
+        method: "",
+        equipment: "",
+        designated_rescuer: "",
+      },
+    ]
+  },
 };

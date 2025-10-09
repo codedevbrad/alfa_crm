@@ -3,6 +3,7 @@ import React from "react";
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import RiskTable from "./risks";
 import { Rams } from "../../rams";
+import PdfHeader from "../header";
 
 /* ---------- Styles (no border shorthands) ---------- */
 
@@ -10,28 +11,6 @@ const styles = StyleSheet.create({
   label: { fontSize: 9, color: "#4B5563", marginBottom: 2 },
 
   page: { padding: 32, fontSize: 10 },
-
-  /* Header */
-  header: {
-    paddingTop: 24,          // was 10
-    paddingBottom: 25,       // was 8
-    paddingHorizontal: 24,
-    backgroundColor: "#F8FAFC",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
-    borderStyle: "solid",
-  },
-  brandBar: {
-    position: "absolute",
-    top: 0, left: 0, right: 0,
-    height: 3,
-    backgroundColor: "#0EA5E9",
-  },
-  headRow: { flexDirection: "row", justifyContent: "space-between" },
-  headerLeft: { flexGrow: 1, marginRight: 8 },
-  headerRight: { alignItems: "flex-end" },
-  headerTitle: { fontSize: 12, fontWeight: 700, marginBottom: 2 }, // small breathing room
-  headerMeta: { fontSize: 9, color: "#4B5563", marginTop: 2 },
 
   /* Push content below fixed header */
   content: { marginTop: 84 }, // was 64 — keep this in step with the taller header
@@ -121,49 +100,6 @@ const styles = StyleSheet.create({
   pillRed: { backgroundColor: "#FECACA", borderColor: "#EF4444" },
 });
 
-/* ---------- Small helpers ---------- */
-
-function metaJoin(parts: (string | undefined | null | false)[]) {
-  return parts.filter(Boolean).join(" • ");
-}
-
-/* Fixed header for all pages */
-function PdfHeader({ rams }: { rams: Rams }) {
-  const leftTop = rams.project.title;
-  const leftBottom = metaJoin([
-    `Client: ${rams.project.client}`,
-    `Location: ${rams.project.location}`,
-    rams.project.prepared_by && `Prepared by: ${rams.project.prepared_by}`,
-  ]);
-  const rightTop = metaJoin([
-    `Date: ${rams.project.date}`,
-    rams.project.review_date && `Review: ${rams.project.review_date}`,
-  ]);
-
-  return (
-    <View fixed style={styles.header}>
-
-      <View style={styles.brandBar} />
-
-      <Text style={styles.label}>Method Statement and Risk Assessment </Text>
-
-      <View style={styles.headRow}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.headerTitle}>{leftTop}</Text>
-          <Text style={styles.headerMeta}>{leftBottom}</Text>
-        </View>
-        <View style={styles.headerRight}>
-          <Text style={styles.headerMeta}>{rightTop}</Text>
-          <Text
-            style={styles.headerMeta}
-            render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`}
-            fixed
-          />
-        </View>
-      </View>
-    </View>
-  );
-}
 
 /* ---------- Legend block shown above Risk Assessment ---------- */
 

@@ -8,7 +8,7 @@ import { FileText, ShieldCheck, Wrench } from "lucide-react";
 export default function Page() {
   const reports = [
     {
-      title: "Health & Safety Report",
+      title: "Risk Assessment and Method Statement (RAMS)",
       desc: "Auto-generate a detailed safety and risk assessment for your project site.",
       icon: <ShieldCheck className="w-10 h-10 text-green-600" />,
       href: "/crm/generate/health/new",
