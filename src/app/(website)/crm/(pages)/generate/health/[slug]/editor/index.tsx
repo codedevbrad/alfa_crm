@@ -191,7 +191,7 @@ export default function RamsEditable({  generatedRams }: { generatedRams?: Rams 
           </div>
 
           {stepDefs[stepIdx].key === "preview" ? (
-            <Button variant="outline" onClick={() => handleDownload(rams, fileName)}>
+            <Button variant="outline" disabled>
               Download PDF
             </Button>
           ) : (
@@ -278,7 +278,7 @@ export default function RamsEditable({  generatedRams }: { generatedRams?: Rams 
             Back
           </Button>
           {stepDefs[stepIdx].key === "preview" ? (
-            <Button onClick={() => handleDownload(rams, fileName)}>Download PDF</Button>
+            <></>
           ) : (
             <Button onClick={goNext}>Next</Button>
           )}
@@ -1051,15 +1051,6 @@ function StepPreview({ rams, fileName }: { rams: Rams; fileName: string }) {
               </button>
             </div>
           </div>
-
-          <Button
-            variant="outline"
-            onClick={() =>
-              handleDownload(rams, fileNameWithStyle(fileName, viewMode), viewMode)
-            }
-          >
-            Download {isClassic ? '(Classic)' : '(Modern)'}
-          </Button>
         </div>
       </div>
 
