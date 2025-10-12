@@ -3,18 +3,26 @@
 import React from "react";
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import { Rams } from "../../rams";
-import PdfHeader from "../header";
+import PdfHeader , { HEADER_HEIGHT} from "../header";
 
 
 /* ---------------- Styles: Traditional Tables ---------------- */
-
-
+ 
 const styles = StyleSheet.create({
 
-   page: { padding: 32, fontSize: 10, color: "#111827" },
+  page: {
+    paddingTop: 32 + HEADER_HEIGHT,  // <- reserves space for fixed header
+    paddingRight: 32,
+    paddingBottom: 32,
+    paddingLeft: 32,
+    fontSize: 10,
+    color: "#111827",
+  },
 
   /* offset main content so it clears the fixed header */
-  content: { marginTop: 86 },  // match your header height
+  content: {  
+
+   },  // match your header height
 
   /* Headings */
   h1: { fontSize: 16, marginBottom: 8, fontWeight: 700 },
@@ -29,6 +37,66 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     borderRadius: 4,
   },
+
+colRole: {
+    flexBasis: 160,   // fixed logical width
+    flexGrow: 0,
+    flexShrink: 0,    // never shrink: keeps column width stable across rows
+  },
+  colDesc: {
+    flexBasis: 0,     // take the rest
+    flexGrow: 1,
+    flexShrink: 1,
+    minWidth: 0,      // IMPORTANT: allow inner text to wrap instead of forcing overflow
+  },
+
+  /* Cell wrappers that respect borders and wrapping */
+  tdWrap: {
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    fontSize: 10,
+    borderRightWidth: 1,
+    borderRightColor: "#E5E7EB",
+    borderStyle: "solid",
+    justifyContent: "flex-start",
+  },
+  tdWrapLast: {
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    fontSize: 10,
+    justifyContent: "flex-start",
+  },
+
+  thWrap: {
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    backgroundColor: "#F3F6FA",
+    fontSize: 10,
+    fontWeight: 700,
+    borderRightWidth: 1,
+    borderRightColor: "#CBD5E1",
+    borderStyle: "solid",
+    justifyContent: "center",
+  },
+  thWrapLast: {
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    backgroundColor: "#F3F6FA",
+    fontSize: 10,
+    fontWeight: 700,
+    justifyContent: "center",
+  },
+
+  /* Text that wraps inside cells */
+  tdText: {
+    fontSize: 10,
+    lineHeight: 1.35,
+  },
+  thCenter: {
+    fontSize: 10,
+    fontWeight: 700,
+  },
+  
   row: {
     flexDirection: "row",
     borderBottomWidth: 1,
@@ -264,6 +332,55 @@ function KeyDetailsTable({ rams }: { rams: Rams }) {
 }
 
 
+
+function RamsResponsibilitiesTable({ rams }: { rams: Rams }) {
+  if (!rams.responsibilities?.length) return null;
+
+  return (
+    <>
+      <Text style={styles.h2}>Responsibilities</Text>
+
+      <View style={styles.table}>
+        {/* Header */}
+        <View style={styles.row}>
+          <View style={[styles.thWrap, styles.colRole]}>
+            <Text style={styles.thCenter}>Role</Text>
+          </View>
+          <View style={[styles.thWrapLast, styles.colDesc]}>
+            <Text style={styles.thCenter}>Description</Text>
+          </View>
+        </View>
+
+        {/* Rows */}
+        {rams.responsibilities.map((r, i) => {
+          const isLast = i === rams.responsibilities.length - 1;
+          const rowStyle = [isLast ? styles.rowLast : styles.row, i % 2 ? styles.zebra : null];
+
+          return (
+            <View key={i} style={rowStyle}>
+              {/* Fixed-width role column */}
+              <View style={[styles.tdWrap, styles.colRole]}>
+                <Text style={styles.tdText} wrap>
+                  {r.role}
+                </Text>
+              </View>
+
+              {/* Flexible description column */}
+              <View style={[styles.tdWrapLast, styles.colDesc]}>
+                <Text style={styles.tdText} wrap>
+                  {r.description}
+                </Text>
+              </View>
+            </View>
+          );
+        })}
+      </View>
+    </>
+  );
+}
+
+
+
 function SimpleListTable({ title, items }: { title: string; items: string[] }) {
   if (!items || items.length === 0) return null;
   return (
@@ -282,6 +399,7 @@ function SimpleListTable({ title, items }: { title: string; items: string[] }) {
     </>
   );
 }
+ 
 
 /* Materials & Equipment table with separate columns */
 function MaterialsTable({ rams }: { rams: Rams }) {
@@ -379,7 +497,6 @@ function ProcedureTable({ rams }: { rams: Rams }) {
     </>
   );
 }
-
 
 
 /* new, polished stylesheet */
@@ -605,7 +722,6 @@ const rescueStyles = StyleSheet.create({
 });
 
 
-
 /* Emergency & Rescue (contacts, hospital, muster, rescue plans, fire watch) */
 function EmergencyRescueTable({ rams }: { rams: Rams }) {
   const p = rams.emergency_plan;
@@ -755,7 +871,6 @@ function HealthSafetyTable({ rams }: { rams: Rams }) {
 }
 
 
-
 /* Full classic risk table (every cell bordered, color-coded R cell) */
 function RiskTableClassic({ rams }: { rams: Rams }) {
   const rows = rams.risk_assessment ?? [];
@@ -827,26 +942,15 @@ export default function RamsPdfClassic({ rams }: { rams: Rams }) {
       <Page size="A4" style={styles.page}>
         <PdfHeader rams={rams} />
         <View style={styles.content}>
+
           <Text style={styles.h1}>Method Statement & Risk Assessment</Text>
+
           <KeyDetailsTable rams={rams} />
+
           <SimpleListTable title="Activities" items={rams.activities || []} />
-          {rams.responsibilities?.length ? (
-            <>
-              <Text style={styles.h2}>Responsibilities</Text>
-              <View style={styles.table}>
-                <View style={styles.row}>
-                  <Text style={[styles.th, { flexBasis: 160, flexGrow: 0 }]}>Role</Text>
-                  <Text style={styles.thLast}>Description</Text>
-                </View>
-                {rams.responsibilities.map((r, i) => (
-                  <View key={i} style={[i === rams.responsibilities.length - 1 ? styles.rowLast : styles.row, i % 2 ? styles.zebra : null]}>
-                    <Text style={[styles.td, { flexBasis: 160, flexGrow: 0 }]}>{r.role}</Text>
-                    <Text style={styles.tdLast}>{r.description}</Text>
-                  </View>
-                ))}
-              </View>
-            </>
-          ) : null}
+
+          <RamsResponsibilitiesTable rams={rams} />
+      
         </View>
       </Page>
 
