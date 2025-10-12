@@ -2,265 +2,127 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import { generateRamsAction } from "./action";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import {
+  Loader2,
+  Bot,
+  Send,
+  Sparkles,
+  CheckCircle2,
+  RotateCcw,
+  AlertTriangle
+} from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 interface RamsChatBotProps {
   updateRams: (data: any) => void;
 }
 
-interface Message {
+/** Tiny helper for animated typing dots */
+function TypingDots() {
+  return (
+    <span className="inline-flex w-5 justify-between">
+      <span className="h-1 w-1 rounded-full bg-current animate-[pulse_1s_ease-in-out_infinite]" />
+      <span className="h-1 w-1 rounded-full bg-current animate-[pulse_1s_0.15s_ease-in-out_infinite]" />
+      <span className="h-1 w-1 rounded-full bg-current animate-[pulse_1s_0.3s_ease-in-out_infinite]" />
+    </span>
+  );
+}
+
+type Message = {
   sender: "bot" | "user";
   text: string;
-}
+};
 
-const initialRams = {
-  project: {
-    title: "Pipework Installation – Boiler Room Upgrade, Manchester Hospital",
-    location: "Central Energy Centre, Manchester",
-    client: "NHS Manchester Estates Division",
-    prepared_by: "ALFA Industrial Services Ltd",
-    date: "2025-10-09",
-    review_date: "2025-11-09",
-    author: "T. Humphries",
-    scope: "Removal of existing carbon steel pipework and installation of new stainless-steel lines feeding the main boiler system. Includes cutting, welding, pressure testing, insulation reinstatement, and commissioning during a planned shutdown.",
-  },
+const STEPS: { key: string; question: string; placeholder?: string }[] = [
+  { key: "title",        question: "What’s the project title?",         placeholder: "e.g. Process Pipework Install – Line B" },
+  { key: "location",     question: "Where is the project located?",      placeholder: "e.g. P&G Thurrock, Hedley Ave, RM20 4AL" },
+  { key: "client",       question: "Who’s the client?",                  placeholder: "e.g. Procter & Gamble" },
+  { key: "prepared_by",  question: "Who prepared this RAMS?",            placeholder: "e.g. T. Humphries" },
+  { key: "date",         question: "What’s the RAMS date? (DD-MM-YYYY)", placeholder: "e.g. 11-04-2025" },
+  { key: "review_date",  question: "What’s the review date? (DD-MM-YYYY, optional — type N/A to skip)", placeholder: "e.g. 11-04-2025" },
+  { key: "scope",        question: "Briefly describe the project scope.", placeholder: "e.g. Install, fit, and weld mild & stainless pipework…" },
+];
 
-  activities: [
-    "cutting and welding stainless steel pipework",
-    "pressure testing with water",
-    "working at height from podium steps",
-    "isolating and locking out existing lines",
-    "handling and positioning pipe sections",
-    "applying insulation and labelling",
-    "final inspection and commissioning"
-  ],
-
-  responsibilities: [
-    { role: "Project Manager", description: "Overall responsibility for delivery and compliance with client and HSE requirements." },
-    { role: "Site Supervisor", description: "Day-to-day management of operatives and coordination with hospital maintenance." },
-    { role: "Lead Welder/Fitter", description: "Carry out fabrication, alignment and welding tasks safely and to specification." },
-    { role: "Health & Safety Officer", description: "Monitor site conditions, conduct toolbox talks, ensure safe systems of work." },
-    { role: "Operatives", description: "Follow RAMS, report hazards, use PPE correctly, and maintain housekeeping." }
-  ],
-
-  materials_equipment: {
-    pipes: ["stainless steel SCH40 2\"–4\" pipe", "elbows and reducers"],
-    fittings: ["stainless steel couplings", "flanges", "PTFE gaskets"],
-    tools: ["MIG/TIG welding sets", "pipe stands", "portable bandsaw", "chain hoist", "MEWP"],
-    ppe: ["helmet", "welding gauntlets", "eye protection", "ear defenders", "safety boots"]
-  },
-
-  health_safety: [
-    "Follow site induction and hospital safety protocols.",
-    "Use appropriate PPE for welding, cutting, and handling hot materials.",
-    "Ensure LOTO procedures are followed on existing lines.",
-    "Keep walkways and access routes clear at all times.",
-    "Maintain ventilation in enclosed areas during welding.",
-    "Report any incidents, near misses or unsafe acts immediately.",
-    "Fire extinguishers and first aid kits to be available near work area."
-  ],
-
-  procedure: [
-    {
-      step: "Preparation",
-      details: [
-        "Review drawings, permits, and safety documentation.",
-        "Confirm isolation of existing pipework (LOTO in place).",
-        "Inspect work area and establish barriers and signage.",
-        "Set up welding screens and fire watch if required."
-      ],
-    },
-    {
-      step: "Installation",
-      details: [
-        "Cut and prepare new stainless-steel pipe sections to size.",
-        "Align and tack weld new sections ensuring level and support.",
-        "Complete full welds using approved TIG process.",
-        "Pressure test with water to specified pressure.",
-        "Drain and dry pipework before insulating and labelling."
-      ],
-    },
-    {
-      step: "Inspection & Handover",
-      details: [
-        "Carry out visual inspection of all welds and connections.",
-        "Remove all tools, waste and barriers.",
-        "Sign off permits and provide documentation to client representative.",
-        "Confirm area returned to safe operational condition."
-      ]
-    }
-  ],
-
-  ppe: [
-    { item: "Safety helmet", standard: "EN397", type: "Head protection" },
-    { item: "Welding gauntlets", standard: "EN12477", type: "Hand protection" },
-    { item: "Protective overalls", standard: "EN ISO 11611", type: "Welding apparel" },
-    { item: "Safety boots (S3)", standard: "EN ISO 20345", type: "Foot protection" },
-    { item: "Safety glasses", standard: "EN166", type: "Eye protection" },
-    { item: "Hearing protection", standard: "EN352", type: "Ear defenders" },
-    { item: "High-visibility vest", standard: "EN20471", type: "Visibility" },
-    { item: "FFP3 respirator", standard: "EN149", type: "Respiratory protection" }
-  ],
-
-  risk_assessment: [
-    {
-      activity: "Hot works (welding and cutting)",
-      hazard: "Fire, burns, fumes, and eye injury",
-      likelihood: 3,
-      severity: 4,
-      risk: 12,
-      who: ["A", "B"],
-      controls:
-        "Hot work permit in place, fire watch assigned, welding screens erected, ventilation maintained, PPE worn.",
-      residual_likelihood: 1,
-      residual_severity: 3,
-      residual_risk: 3,
-      monitoring: "Supervisor inspections and fire watch logs."
-    },
-    {
-      activity: "Manual handling of pipework",
-      hazard: "Back strain or crush injuries",
-      likelihood: 3,
-      severity: 3,
-      risk: 9,
-      who: ["A"],
-      controls:
-        "Team lifting, use of pipe stands and hoists, avoid twisting motions, training in manual handling.",
-      residual_likelihood: 1,
-      residual_severity: 3,
-      residual_risk: 3,
-      monitoring: "Toolbox talks and supervisor checks."
-    },
-    {
-      activity: "Working at height on podium steps",
-      hazard: "Falls or dropped objects",
-      likelihood: 2,
-      severity: 5,
-      risk: 10,
-      who: ["A", "C"],
-      controls:
-        "Use podium steps with handrails, maintain three points of contact, secure tools, no overreaching.",
-      residual_likelihood: 1,
-      residual_severity: 3,
-      residual_risk: 3,
-      monitoring: "Daily visual inspections."
-    }
-  ],
-
-  hazard_register: [
-    {
-      hazard: "Hot works and welding",
-      harm: "Burns, fire, smoke inhalation",
-      existing_controls: "Hot work permit, fire watch, fire extinguisher nearby",
-      further_action: "Review fire watch positioning weekly",
-      action_by: "Site Supervisor"
-    },
-    {
-      hazard: "Manual handling",
-      harm: "Back or limb strain",
-      existing_controls: "Use mechanical aids and team lifts",
-      further_action: "Refresh manual handling training",
-      action_by: "Project Manager"
-    },
-    {
-      hazard: "Working at height",
-      harm: "Falls causing serious injury",
-      existing_controls: "Use podium steps and fall prevention",
-      further_action: "Ensure inspection tags on access equipment",
-      action_by: "H&S Officer"
-    },
-    {
-      hazard: "Slips and trips",
-      harm: "Minor to moderate injury",
-      existing_controls: "Keep area tidy, remove waste regularly",
-      further_action: "Monitor housekeeping daily",
-      action_by: "Operatives"
-    },
-    {
-      hazard: "Electric tools and cables",
-      harm: "Electric shock or trip hazard",
-      existing_controls: "PAT tested tools, avoid trailing leads",
-      further_action: "Use cable covers if across walkways",
-      action_by: "Site Supervisor"
-    }
-  ],
-
-  emergency_plan: {
-    site_contacts: [
-      { name: "John Smith", role: "Site Supervisor", phone: "07801 111111" },
-      { name: "Laura Green", role: "Client Shift Supervisor", phone: "07802 222222" },
-      { name: "Mark Lewis", role: "First Aider", phone: "07803 333333" },
-      { name: "Security Desk", role: "Hospital Security", phone: "0161 123 4567" }
-    ],
-    hospital: {
-      name: "Manchester Royal Infirmary",
-      address: "Oxford Road, Manchester M13 9WL",
-      phone: "0161 276 1234"
-    },
-    muster_point: "Main staff car park north side, by security gatehouse.",
-    rescue_plans: [
-      {
-        scenario: "Rescue from MEWP or height",
-        method: "Lower platform using ground controls or rescue ladder.",
-        equipment: "Rescue kit, harness, fall-arrest lanyard.",
-        designated_rescuer: "Trained MEWP Operator / Supervisor"
-      }
-    ]
-  }
-}
-
-
-export default function RamsChatBot({ updateRams }: RamsChatBotProps) {
+export default function RamsChatBotPopover({ updateRams }: RamsChatBotProps) {
+  const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { sender: "bot", text: "👋 Hi! Let's build your RAMS together. What's the project title?" },
+    { sender: "bot", text: "👋 Hi! Let’s build your RAMS together. What’s the project title?" },
   ]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [thinking, setThinking] = useState(false);
 
-  const steps = [
-    { key: "title", question: "What's the project title?" },
-    { key: "location", question: "Where is the project located?" },
-    { key: "client", question: "Who's the client?" },
-    { key: "prepared_by", question: "Who prepared this RAMS?" },
-    { key: "scope", question: "Briefly describe the project scope." },
-  ];
+  // ScrollArea container ref (we'll find the Radix viewport inside)
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const currentStep = steps.find((s) => !(s.key in answers));
+  const currentStep = useMemo(
+    () => STEPS.find((s) => !(s.key in answers)),
+    [answers]
+  );
+
+  // Auto-scroll to bottom on new messages/thinking/loading/open changes
+  useEffect(() => {
+    const root = scrollContainerRef.current;
+    if (!root) return;
+    const viewport = root.querySelector(
+      "[data-radix-scroll-area-viewport]"
+    ) as HTMLDivElement | null;
+    if (!viewport) return;
+    viewport.scrollTo({ top: viewport.scrollHeight, behavior: "smooth" });
+  }, [messages, loading, thinking, open]);
+
+  function reset() {
+    setMessages([{ sender: "bot", text: "👋 Hi! Let’s build your RAMS together. What’s the project title?" }]);
+    setAnswers({});
+    setInput("");
+    setLoading(false);
+    setThinking(false);
+  }
 
   async function handleSend() {
-    if (!input.trim()) return;
+    if (!input.trim() || loading) return;
 
     const userMsg = input.trim();
     setMessages((prev) => [...prev, { sender: "user", text: userMsg }]);
     setInput("");
 
     if (currentStep) {
-      const updatedAnswers = { ...answers, [currentStep.key]: userMsg };
-      setAnswers(updatedAnswers);
+      const updated = { ...answers, [currentStep.key]: userMsg };
+      setAnswers(updated);
 
-      const nextStep = steps.find((s) => !(s.key in updatedAnswers));
-      if (nextStep) {
-        setMessages((prev) => [...prev, { sender: "bot", text: nextStep.question }]);
+      const next = STEPS.find((s) => !(s.key in updated));
+      if (next) {
+        setThinking(true);
+        setTimeout(() => {
+          setThinking(false);
+          setMessages((prev) => [...prev, { sender: "bot", text: next.question }]);
+        }, 350);
       } else {
-        // all questions answered — generate the RAMS
-        await generateRams(updatedAnswers);
+        await generateRams(updated);
       }
     }
   }
 
   async function generateRams(data: Record<string, string>) {
     setLoading(true);
+    // Echo the overwrite disclaimer right before generation
     setMessages((prev) => [
       ...prev,
-      { sender: "bot", text: "🧠 Generating your RAMS object..." },
+      { sender: "bot", text: "⚠️ Heads up: generating will overwrite your existing editor content." },
+      { sender: "bot", text: "🧠 Generating your RAMS object…" },
     ]);
 
     try {
+      // Call your server action (keep its expected args)
       const aiRams = await generateRamsAction({
         title: data.title,
         client: data.client,
@@ -269,22 +131,29 @@ export default function RamsChatBot({ updateRams }: RamsChatBotProps) {
         scope: data.scope,
       });
 
-      // ✅ merge user answers into AI result so those values always match user input
+      // Normalise optional review_date ("N/A" -> undefined)
+      const normalizedReview = (data.review_date || "").trim().toLowerCase();
+      const reviewDateValue =
+        normalizedReview === "n/a" || normalizedReview === "na" || normalizedReview === "none"
+          ? undefined
+          : data.review_date;
+
+      // Merge user-provided values back into RAMS.project
       const mergedRams = {
         ...aiRams,
         project: {
           ...aiRams.project,
-          title: data.title || aiRams.project.title,
-          location: data.location || aiRams.project.location,
-          client: data.client || aiRams.project.client,
-          prepared_by: data.prepared_by || aiRams.project.prepared_by,
-          scope: data.scope || aiRams.project.scope,
+          title: data.title || aiRams.project?.title,
+          location: data.location || aiRams.project?.location,
+          client: data.client || aiRams.project?.client,
+          prepared_by: data.prepared_by || aiRams.project?.prepared_by,
+          scope: data.scope || aiRams.project?.scope,
+          date: data.date || aiRams.project?.date,
+          review_date: reviewDateValue ?? aiRams.project?.review_date,
         },
       };
 
-      console.log("✅ Final RAMS object:", mergedRams);
       updateRams(mergedRams);
-
       setMessages((prev) => [
         ...prev,
         { sender: "bot", text: "✅ RAMS object generated and sent to your form!" },
@@ -300,41 +169,156 @@ export default function RamsChatBot({ updateRams }: RamsChatBotProps) {
     }
   }
 
+  const progress = ((Object.keys(answers).length / STEPS.length) * 100).toFixed(0);
+
   return (
-    <div className="w-full max-w-md mx-auto border rounded-lg p-4 flex flex-col gap-3 bg-background">
-      <div className="h-[400px] overflow-y-auto space-y-2 p-2 border rounded-md bg-muted">
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className={`p-2 rounded-lg text-sm ${
-              m.sender === "bot"
-                ? "bg-secondary text-secondary-foreground self-start"
-                : "bg-primary text-primary-foreground self-end ml-auto"
-            } w-fit max-w-[85%]`}
+    <div className="z-50">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            size="lg"
+            className="shadow-xl rounded-full px-5 gap-2 transition-all hover:scale-105
+              bg-gradient-to-tr from-indigo-600 via-fuchsia-600 to-rose-500 text-white"
+            aria-label="Open RAMS Chatbot"
           >
-            {m.text}
-          </div>
-        ))}
+            <Sparkles className="h-4 w-4" />
+            RAMS AI
+          </Button>
+        </PopoverTrigger>
 
-        {loading && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="w-4 h-4 animate-spin" /> Generating…
-          </div>
-        )}
-      </div>
+        <PopoverContent
+          align="end"
+          sideOffset={12}
+          className="w-[380px] p-0 overflow-hidden rounded-2xl shadow-2xl border-0"
+        >
+          {/* Header with gradient */}
+          <div
+            className="relative p-4 text-white"
+            style={{
+              background:
+                "radial-gradient(1200px 400px at 80% -10%, rgba(255,255,255,0.25), transparent), linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #f43f5e 100%)",
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 backdrop-blur">
+                  <Bot className="h-4 w-4" />
+                </div>
+                <div>
+                  <div className="font-medium leading-none">RAMS Assistant</div>
+                  <div className="text-xs opacity-90">Guided AI generation</div>
+                </div>
+              </div>
 
-      <div className="flex items-center gap-2">
-        <Input
-          placeholder="Type your answer..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          disabled={loading}
-        />
-        <Button onClick={handleSend} disabled={loading}>
-          Send
-        </Button>
-      </div>
+              <div className="flex items-center gap-2">
+                {Object.keys(answers).length === STEPS.length ? (
+                  <Badge className="bg-white/20 text-white hover:bg-white/30">
+                    <CheckCircle2 className="mr-1 h-3 w-3" />
+                    Ready
+                  </Badge>
+                ) : (
+                  <Badge className="bg-white/20 text-white hover:bg-white/30">
+                    {progress}% complete
+                  </Badge>
+                )}
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="h-8 w-8 rounded-full bg-white/20 text-white hover:bg-white/30"
+                  onClick={reset}
+                  title="Restart"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Overwrite disclaimer (persistent) */}
+          <div className="p-3 pt-3">
+            <Alert className="border-amber-300/60 bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-900/50">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle className="text-sm">Important</AlertTitle>
+              <AlertDescription className="text-xs leading-relaxed">
+                Generating with RAMS AI will <span className="font-semibold">overwrite</span> the existing content in your editor
+                (previous entries will be cleared).
+              </AlertDescription>
+            </Alert>
+          </div>
+
+          {/* Messages */}
+          <div className="px-3 pb-3">
+            <ScrollArea className="h-[320px]" ref={scrollContainerRef}>
+              <div className="space-y-2 pr-2">
+                {messages.map((m, i) => (
+                  <div
+                    key={i}
+                    className={`max-w-[85%] w-fit rounded-2xl px-3 py-2 text-sm shadow-sm ${
+                      m.sender === "bot"
+                        ? "bg-muted text-foreground"
+                        : "bg-primary text-primary-foreground ml-auto"
+                    }`}
+                  >
+                    {m.text}
+                  </div>
+                ))}
+
+                {thinking && (
+                  <div className="max-w-[85%] w-fit rounded-2xl px-3 py-2 text-sm bg-muted text-foreground shadow-sm">
+                    <TypingDots />
+                  </div>
+                )}
+
+                {loading && (
+                  <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Generating…
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
+
+          <Separator />
+
+          {/* Input Bar */}
+          <div className="p-3">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSend();
+              }}
+              className="flex items-center gap-2"
+            >
+              <div className="flex flex-col w-full">
+                <Textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  disabled={loading}
+                  placeholder={currentStep?.placeholder || "Type your answer…"}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend();
+                    }
+                  }}
+                  className="bg-background"
+                />
+                <Button type="submit" disabled={loading || !input.trim()} className="gap-1 mt-2 self-end">
+                  <Send className="h-4 w-4" />
+                  Send
+                </Button>
+              </div>
+            </form>
+
+            {currentStep?.key === "scope" && (
+              <div className="mt-2 text-[11px] text-muted-foreground">
+                Tip: mention metal type, process (cut/fit/weld), testing, access, permits.
+              </div>
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }

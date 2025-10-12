@@ -60,10 +60,15 @@ interface Rams {
 }
 
 RULES:
-- Always fill in all fields (arrays must not be empty).
+- Always fill in **all fields** (arrays must NOT be empty).
+- Every array of objects must contain **at least 7 objects**.
+  (Examples: at least 7 risk_assessment items, 7 hazard_register entries,
+   7 procedure steps, 7 responsibilities, 7 rescue_plans, etc.)
+- Arrays of strings (like health_safety, activities, ppe lists) must contain at least **7 entries**.
 - Use UK HSE terminology unless locale="US".
 - Dates must be in YYYY-MM-DD format.
 - likelihood and severity are integers 1–5; risk = L × S.
 - residual_risk = residual_likelihood × residual_severity when provided.
-- Use concise British English. Do NOT include explanations or markdown.
+- Use concise British English.
+- Do NOT include explanations, markdown, comments, or formatting — return valid JSON only.
 `.trim();

@@ -33,114 +33,7 @@ import {
 } from "@/components/ui/accordion";
 import { Progress } from "@/components/ui/progress";
 
-/* ---------- Small reusable UI ---------- */
-
-function LabeledInput({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <div className="text-sm font-medium">{label}</div>
-      <Input value={value} onChange={(e) => onChange(e.target.value)} />
-    </div>
-  );
-}
-
-function SectionTable({
-  title,
-  headers,
-  rows,
-  renderRow,
-  onAdd,
-}: {
-  title: string;
-  headers: string[];
-  rows: any[][];
-  renderRow: (rowIdx: number) => React.ReactNode;
-  onAdd: () => void;
-}) {
-  return (
-    <section className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-medium">{title}</h2>
-        <Button onClick={onAdd}>Add row</Button>
-      </div>
-      <Table className="border rounded-md">
-        <TableHeader>
-          <TableRow>
-            {headers.map((h, i) => (
-              <TableHead key={i}>{h}</TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((_, i) => (
-            <TableRow key={i}>{renderRow(i)}</TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </section>
-  );
-}
-
-function ArrayTable({
-  title,
-  values,
-  onChange,
-}: {
-  title: string;
-  values: string[];
-  onChange: (vals: string[]) => void;
-}) {
-  return (
-    <section className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">{title}</h3>
-        <Button onClick={() => onChange([...(values ?? []), ""])}>Add</Button>
-      </div>
-      <Table className="border rounded-md">
-        <TableHeader>
-          <TableRow>
-            <TableHead>Value</TableHead>
-            <TableHead className="w-28"></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {(values ?? []).map((val, i) => (
-            <TableRow key={i}>
-              <TableCell>
-                <Input
-                  value={val}
-                  onChange={(e) => {
-                    const next = [...values];
-                    next[i] = e.target.value;
-                    onChange(next);
-                  }}
-                />
-              </TableCell>
-              <TableCell>
-                <Button
-                  variant="ghost"
-                  onClick={() => onChange(values.filter((_, idx) => idx !== i))}
-                >
-                  Remove
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </section>
-  );
-}
-
-
+import { LabeledInput , ArrayTable  } from "./utils"; // <- your existing helper, or inline a simple one
 
 const stepDefs = [
   { key: "project", label: "Project" },
@@ -159,10 +52,10 @@ const stepDefs = [
   { key: "preview", label: "Preview & Download" },
 ] as const;
 
+import StepActivities from "./step.activities";
 
 
 export default function RamsEditable({  generatedRams }: { generatedRams?: Rams }) {
-
 
   const [rams, setRams] = useState<Rams>(generatedRams);
   const [stepIdx, setStepIdx] = useState(0);
@@ -319,38 +212,39 @@ function StepProject({ rams, setRams }: { rams: Rams; setRams: any }) {
   );
 }
 
-function StepActivities({ rams, setRams }: { rams: Rams; setRams: any }) {
-  return (
-    <SectionTable
-      title="Activities"
-      headers={["Activity", ""]}
-      rows={(rams.activities ?? []).map((a) => [a])}
-      renderRow={(rowIdx) => (
-        <>
-          <TableCell>
-            <Input
-              value={rams.activities[rowIdx] ?? ""}
-              onChange={(e) =>
-                setRams((v: Rams) => ({ ...v, activities: updateArray(v.activities, rowIdx, e.target.value) }))
-              }
-            />
-          </TableCell>
-          <TableCell className="w-28">
-            <Button
-              variant="ghost"
-              onClick={() =>
-                setRams((v: Rams) => ({ ...v, activities: (v.activities ?? []).filter((_, i) => i !== rowIdx) }))
-              }
-            >
-              Remove
-            </Button>
-          </TableCell>
-        </>
-      )}
-      onAdd={() => setRams((v: Rams) => ({ ...v, activities: [...(v.activities ?? []), ""] }))}
-    />
-  );
-}
+// function StepActivities({ rams, setRams }: { rams: Rams; setRams: any }) {
+//   return (
+//     <SectionTable
+//       title="Activities"
+//       headers={["Activity", ""]}
+//       rows={(rams.activities ?? []).map((a) => [a])}
+//       renderRow={(rowIdx) => (
+//         <>
+//           <TableCell>
+//             <Input
+//               value={rams.activities[rowIdx] ?? ""}
+//               onChange={(e) =>
+//                 setRams((v: Rams) => ({ ...v, activities: updateArray(v.activities, rowIdx, e.target.value) }))
+//               }
+//             />
+//           </TableCell>
+//           <TableCell className="w-28">
+//             <Button
+//               variant="ghost"
+//               onClick={() =>
+//                 setRams((v: Rams) => ({ ...v, activities: (v.activities ?? []).filter((_, i) => i !== rowIdx) }))
+//               }
+//             >
+//               Remove
+//             </Button>
+//           </TableCell>
+//         </>
+//       )}
+//       onAdd={() => setRams((v: Rams) => ({ ...v, activities: [...(v.activities ?? []), ""] }))}
+//     />
+//   );
+// }
+
 
 function StepResponsibilities({ rams, setRams }: { rams: Rams; setRams: any }) {
   return (
@@ -1159,8 +1053,3 @@ function setProj<K extends keyof Rams["project"]>(
   setRams((v) => ({ ...v, project: { ...v.project, [key]: val } }));
 }
 
-function updateArray(arr: string[] | undefined, i: number, val: string) {
-  const next = [...(arr ?? [])];
-  next[i] = val;
-  return next;
-}

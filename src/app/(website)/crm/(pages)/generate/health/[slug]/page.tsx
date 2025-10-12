@@ -15,11 +15,12 @@ export default function Page() {
           Risk Assessment and Method Statement (RAMS) Generator
         </h1>
 
-          <RamsImporter updateRams={setRams} />
+          <div className="mb-4 flex justify-center gap-4"> 
+            <RamsImporter updateRams={setRams} />
+            <RamsChatBot updateRams={setRams} />
+          </div>
 
         <div>
-          {/* <RamsChatWizard updateRams={setRams} />  */}
-          <RamsChatBot updateRams={setRams} />
           <RamsEditable generatedRams={rams} />
         </div>
       </div>
