@@ -1,16 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export const runtime = "nodejs" // Prisma needs Node runtime
+export const runtime = "nodejs"; // Prisma needs Node runtime
 
-import { NextResponse } from "next/server"
-import { prisma } from "@/lib/db/prisma"
-import { Prisma, LeadStatus } from "@prisma/client"
-import { z } from "zod"
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db/prisma";
+import { Prisma, LeadStatus, LeadFrom } from "@prisma/client";
+import { z } from "zod";
+
+// helpers
+const trimOrNull = (v: unknown) => {
+  if (typeof v !== "string") return null;
+  const t = v.trim();
+  return t === "" ? null : t;
+};
 
 // Accept number or string for amount
 const AmountSchema = z
   .union([z.number(), z.string()])
   .transform((v) => (v === "" ? undefined : v))
-  .optional()
+  .optional();
 
 const CreateLeadSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -22,39 +29,51 @@ const CreateLeadSchema = z.object({
   source: z.string().optional(),
   status: z.nativeEnum(LeadStatus).optional().default(LeadStatus.NEW),
   notes: z.string().optional(),
-})
+
+  // ✅ REQUIRED by your Prisma model (no ? on `type`)
+  type: z.nativeEnum(LeadFrom),
+});
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json()
-    const input = CreateLeadSchema.parse(body)
+    const body = await req.json();
+    const input = CreateLeadSchema.parse(body);
 
     const data = {
-      name: input.name,
-      company: input.company ?? null,
-      email: input.email ?? null,
-      phone: input.phone ?? null,
-      service: input.service ?? null,
+      name: input.name.trim(),
+
+      company: trimOrNull(input.company),
+      email: input.email ? input.email.trim().toLowerCase() : null,
+      phone: trimOrNull(input.phone),
+
+      service: trimOrNull(input.service),
       amount:
         input.amount !== undefined && input.amount !== null
           ? new Prisma.Decimal(input.amount as any)
           : null,
-      source: input.source ?? null,
+      source: trimOrNull(input.source),
+
       status: input.status ?? LeadStatus.NEW,
-      notes: input.notes ?? null,
-    } satisfies Prisma.LeadCreateInput
+      notes: trimOrNull(input.notes),
 
-    const lead = await prisma.lead.create({ data })
+      // ✅ required enum
+      type: input.type,
+    } satisfies Prisma.LeadCreateInput;
 
-    return NextResponse.json(lead, { status: 201 })
+    const lead = await prisma.lead.create({ data });
+
+    return NextResponse.json(lead, { status: 201 });
   } catch (err: any) {
     if (err?.name === "ZodError") {
       return NextResponse.json(
         { error: "Validation failed", issues: err.issues },
         { status: 400 }
-      )
+      );
     }
-    console.error("Create lead error:", err)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    console.error("Create lead error:", err);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

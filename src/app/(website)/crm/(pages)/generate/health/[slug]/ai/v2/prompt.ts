@@ -60,6 +60,7 @@ interface Rams {
 }
 
 RULES:
+- never use —em dashes—, only hyphens -.
 - Always fill in **all fields** (arrays must NOT be empty).
 - Every array of objects must contain **at least 7 objects**.
   (Examples: at least 7 risk_assessment items, 7 hazard_register entries,

@@ -121,6 +121,11 @@ enum LeadStatus {
   LOST
 }
 
+enum LeadFrom {
+  MONTON 
+  LASER
+}
+
 model Lead {
   id        String      @id @default(cuid())
   name      String
@@ -134,6 +139,8 @@ model Lead {
   status    LeadStatus  @default(NEW)
 
   notes     String?
+
+  type      LeadFrom
 
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
