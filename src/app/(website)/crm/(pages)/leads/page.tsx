@@ -4,6 +4,10 @@ export const runtime = "nodejs";
 import { prisma } from "@/lib/db/prisma";
 import { LeadStatus, Prisma, LeadFrom } from "@prisma/client";
 import Link from "next/link";
+import { DeleteLeadButton } from "./deleteLead";
+import { DeleteAllNewButton } from "./deleteAllLeads";
+
+import { revalidatePath } from "next/cache"; // (not used directly here but OK if you keep)
 
 const GBP = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" });
 const DTF = new Intl.DateTimeFormat("en-GB", {
@@ -88,7 +92,6 @@ export default async function LeadsPage({
   const leads = await prisma.lead.findMany({
     where,
     orderBy: { createdAt: "desc" },
-    // remove take limit so analytics are complete for the filtered set
     select: {
       id: true,
       name: true,
@@ -189,6 +192,9 @@ export default async function LeadsPage({
           Apply
         </button>
 
+        {/* Optional Bulk Delete (NEW) */}
+        <DeleteAllNewButton />
+
         <Link
           href="/crm/leads/new"
           className="ml-auto inline-flex h-10 items-center rounded-md bg-black px-4 text-sm font-medium text-white hover:bg-neutral-800"
@@ -197,7 +203,7 @@ export default async function LeadsPage({
         </Link>
       </form>
 
-      {/* KPI cards (from one fetch) */}
+      {/* KPI cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {STATUS_ORDER.map((s) => {
           const t = totalsMap.get(s)!;
@@ -215,7 +221,7 @@ export default async function LeadsPage({
         })}
       </div>
 
-      {/* Analytics — Quotes + New Incoming (derived from same array) */}
+      {/* Analytics — Quotes + New Incoming */}
       <div className="rounded-xl border bg-card p-4 grid gap-4 md:grid-cols-2">
         <div>
           <div className="text-sm font-semibold mb-2">Quotes</div>
@@ -286,6 +292,7 @@ export default async function LeadsPage({
 
                 <div className="flex items-center gap-2">
                   <StatusBadge status={l.status} />
+
                   <Link
                     href={`/crm/leads/${l.id}`}
                     className="inline-flex h-8 items-center rounded-md border px-3 text-xs hover:bg-muted"
@@ -293,6 +300,9 @@ export default async function LeadsPage({
                   >
                     View
                   </Link>
+
+                  {/* Delete (NEW only) */}
+                  {l.status === "NEW" && <DeleteLeadButton id={l.id} />}
                 </div>
               </div>
 
